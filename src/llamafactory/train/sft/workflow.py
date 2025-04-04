@@ -22,13 +22,13 @@ from ...extras.constants import IGNORE_INDEX
 from ...extras.logging import get_logger
 from ...extras.misc import calculate_tps, get_logits_processor
 from ...extras.ploting import plot_loss
-from ...model import load_model, load_tokenizer
+from ...model import load_model, load_tokenizer, load_gpt_tokenizer
 from ..trainer_utils import create_modelcard_and_push
 from .metric import ComputeAccuracy, ComputeSimilarity, eval_logit_processor
 from .trainer import CustomSeq2SeqTrainer
 
 from llamafactory.data.data_utils import DatasetModule
-from transformers import GPT2TokenizerFast
+
 from datasets import load_dataset
 from multiprocessing import cpu_count
 
@@ -138,28 +138,18 @@ def run_sft(
     create_modelcard_and_push(trainer, model_args, data_args, training_args, finetuning_args)
 
 
-def load_gpt4_tokenizer():
-    
-
-    # Load tokenizer from the specified model
-    tokenizer = GPT2TokenizerFast.from_pretrained("Xenova/gpt-4")
-
-    return tokenizer
 
     
 def run_sft_next_token(
-    tokenizer,
-    model,
-    
     model_args: "ModelArguments",
-    # data_args: "DataArguments",
+    data_args: "DataArguments",
     training_args: "Seq2SeqTrainingArguments",
     finetuning_args: "FinetuningArguments",
     generating_args: "GeneratingArguments",
     callbacks: Optional[list["TrainerCallback"]] = None,
 ):
     
-    tokenizer_module = load_tokenizer(model_args)
+    tokenizer_module = load_gpt_tokenizer(model_args)
     tokenizer = tokenizer_module["tokenizer"]
     dataset_module = DatasetModule()
     

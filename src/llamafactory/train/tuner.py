@@ -33,7 +33,7 @@ from .kto import run_kto
 from .ppo import run_ppo
 from .pt import run_pt
 from .rm import run_rm
-from .sft import run_sft
+from .sft import run_sft, run_sft_next_token
 from .trainer_utils import get_ray_trainer, get_swanlab_callback
 
 
@@ -66,6 +66,13 @@ def _training_function(config: dict[str, Any]) -> None:
     if finetuning_args.stage == "pt":
         run_pt(model_args, data_args, training_args, finetuning_args, callbacks)
     elif finetuning_args.stage == "sft":
+    #     model_args: "ModelArguments",
+    # data_args: "DataArguments",
+    # training_args: "Seq2SeqTrainingArguments",
+    # finetuning_args: "FinetuningArguments",
+    # generating_args: "GeneratingArguments",
+    # callbacks: Optional[list["TrainerCallback"]] 
+    
         run_sft(model_args, data_args, training_args, finetuning_args, generating_args, callbacks)
     elif finetuning_args.stage == "rm":
         run_rm(model_args, data_args, training_args, finetuning_args, callbacks)
@@ -75,6 +82,8 @@ def _training_function(config: dict[str, Any]) -> None:
         run_dpo(model_args, data_args, training_args, finetuning_args, callbacks)
     elif finetuning_args.stage == "kto":
         run_kto(model_args, data_args, training_args, finetuning_args, callbacks)
+    elif finetuning_args.stage == "sft_next_token":
+        run_sft_next_token(model_args, data_args, training_args, finetuning_args, generating_args, callbacks)
     else:
         raise ValueError(f"Unknown task: {finetuning_args.stage}.")
 

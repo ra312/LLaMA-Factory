@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .workflow import run_sft
+from .workflow import run_sft, run_sft_next_token
 
 
-__all__ = ["run_sft"]
+__all__ = ["run_sft", "run_sft_next_token"]

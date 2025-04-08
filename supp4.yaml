@@ -1,0 +1,61 @@
+### model
+# model_name_or_path: memevis/supp4
+model_name_or_path: Qwen/Qwen2.5-0.5B
+#deepspeed: ds_z3_offload_config.json
+
+### method
+stage: next_token
+
+
+ddp_find_unused_parameters: false
+fsdp_config:
+  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+  fsdp_backward_prefetch: BACKWARD_PRE
+  fsdp_forward_prefetch: false
+  fsdp_cpu_ram_efficient_loading: true
+  fsdp_offload_params: false
+  fsdp_sharding_strategy: FULL_SHARD
+  fsdp_state_dict_type: FULL_STATE_DICT
+  fsdp_sync_module_states: true
+  fsdp_use_orig_params: false
+
+# do_train: true
+# finetuning_type: lora
+# lora_target: all
+# lora_rank: 16
+# lora_alpha: 16
+# lora_dropout: 0.05
+
+
+
+
+# ### dataset
+# dataset: c4_demo
+# template: qwen
+# cutoff_len: 2024
+# overwrite_cache: true
+# #overwrite_cache: false
+# preprocessing_num_workers: 256
+
+# ### output
+# output_dir: adapters/memevis-supp4
+# logging_steps: 100
+# save_steps: 5000
+# plot_loss: true
+# overwrite_output_dir: true
+
+# ### train
+# per_device_train_batch_size: 1
+# gradient_accumulation_steps: 8
+# learning_rate: 1.0e-4
+# num_train_epochs: 2
+# lr_scheduler_type: cosine
+# warmup_ratio: 0.1
+# bf16: true
+# ddp_timeout: 180000000
+
+# ### eval
+# val_size: 0.01
+# per_device_eval_batch_size: 1
+# eval_strategy: steps
+# eval_steps: 1000000

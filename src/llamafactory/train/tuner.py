@@ -75,6 +75,129 @@ def _training_function(config: dict[str, Any]) -> None:
         run_dpo(model_args, data_args, training_args, finetuning_args, callbacks)
     elif finetuning_args.stage == "kto":
         run_kto(model_args, data_args, training_args, finetuning_args, callbacks)
+    elif finetuning_args.stage == "next_token":
+        from llamafactory.train.trainer_utils import create_custom_optimizer
+        def run_next_token_finetune():
+            
+            from transformers import AutoModelForCausalLM, Trainer, TrainingArguments
+            
+            
+            from transformers import AutoTokenizer, DataCollatorForLanguageModeling
+            from llamafactory.train.arxiv_modelling.arxiv_page_iterator import ArxivPageLoader
+
+            
+            
+
+            
+            
+
+            tokenizer = AutoTokenizer.from_pretrained("Xenova/gpt-4")
+            tokenizer.pad_token = (
+                tokenizer.eos_token
+            )
+
+            
+            # model = AutoModelForCausalLM.from_pretrained(model_name)
+            # model = init_adapter(model, tokenizer, finetuning_args)
+
+            # Training arguments
+            training_args = TrainingArguments(
+                max_steps=10,
+                output_dir="./output",  # Output directory
+                overwrite_output_dir=True,
+                num_train_epochs=3,  # Adjust the number of epochs
+                per_device_train_batch_size=4,  # Batch size per device (GPU)
+                logging_dir="./logs",
+                logging_steps=500,
+                save_steps=1000,
+                save_total_limit=2,
+                gradient_accumulation_steps=2,  # Accumulate gradients to simulate larger batch size
+                fp16=True,  # Enable mixed precision training
+                eval_strategy="no",
+                logging_first_step=True,
+                eval_steps=500,  # Evaluation frequency
+                report_to="tensorboard",  # Log to TensorBoard
+            )
+            from llamafactory.train.arxiv_modelling.custom_trainer import CustomLMTrainer
+            # from peft import get_peft_model, LoraConfig 
+            # Print all attention layers in the model
+            
+        
+            pages = [0, 50, 100, 150]
+            dataset = ArxivPageLoader(tokenizer, pages)
+            collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+            # create_custom_optimizer
+            from llamafactory.hparams import FinetuningArguments
+            finetuning_args = FinetuningArguments(
+                lora_rank=8,
+                lora_target='q_proj',
+                lora_alpha=32,
+                lora_dropout=0.1,
+            )
+            from llamafactory.hparams import ModelArguments
+            model_args = ModelArguments(
+                model_name_or_path='NemanTeam/nemesis'
+            )
+            
+            
+            from llamafactory.model.loader import load_model
+            model = load_model(
+                tokenizer=tokenizer,
+                model_args=model_args,
+                finetuning_args=finetuning_args,
+                is_trainable=True,
+            )
+            
+            # model: "PreTrainedModel",
+            # training_args: "TrainingArguments",
+            # finetuning_args: "FinetuningArguments",
+            # LoRA Configuration
+            # target_modules = ["q_proj", "k_proj", "v_proj", "output_proj"]
+            # lora_config = LoraConfig(
+            #     r=8,  # Rank of the decomposition
+            #     lora_alpha=32,  # Scaling factor for the update
+            #     lora_dropout=0.1,  # Dropout rate for the LoRA layers
+            #     target_modules=target_modules,  # Target specific modules (in GPT-2 case, attention layers)
+            #     bias="none",  # No bias modification
+            #     task_type="CAUSAL_LM",  # Causal Language Modeling
+            # )
+            # model = get_peft_model(model, lora_config)
+            # trainer = Trainer(
+            #     model=model,
+            #     args=training_args,
+            #     train_dataset=dataset,
+            #     data_collator=collator,
+            #     tokenizer=tokenizer,
+            # )
+# class CustomLMTrainer(Trainer):
+# r"""Inherits Trainer"""
+
+# def __init__(
+# self,
+# finetuning_args: "FinetuningArguments",
+# processor: Optional["ProcessorMixin"],
+# gen_kwargs: Optional[dict[str, Any]] = None,
+# **kwargs,
+
+            trainer = CustomLMTrainer(
+                finetuning_args=finetuning_args,
+                model=model,
+                args=training_args,
+                train_dataset=dataset,
+                data_collator=collator,
+                tokenizer=tokenizer,
+            )
+
+            # Start training
+            trainer.train()
+            logger.info_rank0("Training completed.")
+            # Save the model
+            trainer.save_model("./output")
+            logger.info_rank0("Model saved to ./output.")
+        try:
+            run_next_token_finetune()
+        except Exception as error_launching_llama_finetune:
+            print("Failed to launch the LLaMA finetune process:", error_launching_llama_finetune)
     else:
         raise ValueError(f"Unknown task: {finetuning_args.stage}.")
 

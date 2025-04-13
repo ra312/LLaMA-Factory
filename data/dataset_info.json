@@ -631,6 +631,12 @@
       "prompt": "text"
     }
   },
+  "red_pajama": {
+    "file_name": "redpajama_arxiv.jsonl",
+    "columns": {
+      "prompt": "text"
+    }
+  },
   "c4_demo": {
     "file_name": "c4_demo.jsonl",
     "columns": {

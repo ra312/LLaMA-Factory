@@ -1,10 +1,14 @@
-from datasets import Dataset, load_dataset
+from datasets import load_dataset, Dataset
 from typing import List, Dict
 from multiprocessing import cpu_count
 import logging
 import os
 import tempfile
 import shutil
+import clickhouse_connect
+from tqdm import tqdm
+from dotenv import load_dotenv
+import os
 
 # Disable Hugging Face caching globally
 os.environ["HF_DATASETS_CACHE"] = tempfile.mkdtemp()
@@ -41,22 +45,16 @@ split_dataset = dataset.map(
     num_proc=NUM_PROC,
 )
 
-flattened_dataset = split_dataset.flatten_indices()
-
-def add_labels(example):
-    example["ground_truth_answer"] = example["text"]
-    example["question_2"] = example["text"]
-    return example
-
-flattened_dataset = flattened_dataset.map(
-    add_labels,
-    batched=True,
-    batch_size=1024,
-    remove_columns=['text'],
-    num_proc=NUM_PROC,
-)
-
-flattened_dataset.to_json("train_arxiv.jsonl", lines=True, num_proc=NUM_PROC)
-
-# Optional: clean up temp dirs (if you want zero disk trace)
+flattened_dataset = split_dataset.flatten_indices().select_columns(['text'])
 shutil.rmtree(os.environ["HF_DATASETS_CACHE"], ignore_errors=True)
+
+flattened_dataset.save_to_disk(
+    "/workspace/LLaMA-Factory/data/redpajama_arxiv_hf",
+    num_proc=NUM_PROC)
+flattened_dataset = Dataset.load_from_disk("/workspace/LLaMA-Factory/data/redpajama_arxiv_hf")
+HF_DATASET_REPO = "zxczxczxcz/redpajama_arxiv_hf"
+dataset.push_to_hub(
+    repo_id=HF_DATASET_REPO, token=os.getenv('HF_USER_TOKEN'), private=True)
+
+
+

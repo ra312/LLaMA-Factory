@@ -631,8 +631,8 @@
       "prompt": "text"
     }
   },
-  "red_pajama": {
-    "file_name": "redpajama_arxiv.jsonl",
+  "arxiv": {
+    "hf_hub_url": "redpajama_arxiv.jsonl",
     "columns": {
       "prompt": "text"
     }
